@@ -76,4 +76,5 @@ Fork 本项目之后，还需要做一些事情才能让你的页面「正确」
 
 [1]: https://github.com/mzlogin/chinese-copywriting-guidelines
 [2]: https://help.github.com/articles/setting-up-your-pages-site-locally-with-jekyll/
-[3]: https://github.com/mzlogin/mzlogin.github.io/issues/2
+[3]: https://github.com/mzlogin/mzlogin.github.io/issues/2  
+  a
