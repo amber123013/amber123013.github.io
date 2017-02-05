@@ -8,16 +8,19 @@ menu: 关于
 permalink: /about/
 ---
 
+我是马壮，码而生，码而立。
+
 仰慕「优雅编码的艺术」。
 
 ## 坚信
 
 * 熟能生巧
 * 努力改变人生
+
 ## 联系
 
 * GitHub：[@amber123013](https://github.com/amber123013)
- 
+
 ## Skill Keywords
 
 #### Software Engineer Keywords
