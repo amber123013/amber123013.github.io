@@ -96,7 +96,7 @@ duoshuo_username: null
 disqus_username: null
 # https://github.com/gitalk/gitalk#install
 gitalk:
-    owner: amber
+    owner: amber123013
     repo: amber123013.github.io
     clientID: 26ab70d7c8ef4313be5f
     clientSecret: 3f1835280259a2b16b1860b185ec8fd3ec0f75f6
