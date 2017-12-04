@@ -56,7 +56,7 @@ sudo apt-get install nginx (80端口被占用，安装会报错？)
 使用 `service nginx start` 启动服务器
 访问 `ip:8080`  如下说明 nginx 安装配置成功
 注释 配置文件的 include 语句
-![](/images/posts/nginx/01.png)
+  ![](/images/posts/nginx/01.png)
 
 ### 安装 redis
 
@@ -109,7 +109,7 @@ gzip on;
     gzip_vary on;
 ```
 压缩效果如下(没压缩之前大小大概1.8m)
-![](/images/posts/nginx/01.png)
+ ![](/images/posts/nginx/01.png)
 重启 nginx 访问ip:8080 可以发现已经反向代理到tomcat了 
 
 ## 多服务器负载均衡
@@ -145,7 +145,7 @@ location / {
             proxy_pass http://tomcat_80_8322;
     }
 ```
-![](/images/posts/nginx/01.png)
+  ![](/images/posts/nginx/01.png)
 
 从图片中可以看到请求被随机分配到了两台服务器上,但前台还是一直保持登录的。
 现在两台服务器(~~没说你，nginx~~)无论挂了那一台 网站还是能正常运行的。
