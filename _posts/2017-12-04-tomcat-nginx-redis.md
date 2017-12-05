@@ -154,3 +154,35 @@ location / {
 从图片中可以看到请求被随机分配到了两台服务器上,但前台还是一直保持登录的。
 现在两台服务器(~~没说你，nginx~~)无论挂了那一台 网站还是能正常运行的。
 *运行时发现 JSESSIONID 在不停变化 导致登录状态丢失 不知道什么原因 重启tomcat就好了*
+
+### 设置图片上传服务器
+
+现在还有最后一个问题。 因为在这个项目中有图片上传功能。现在一共有 nginx n、tomcat A、tomcat B、三个 web 服务器，上面配置了静态请求由 nginx 处理，图片css等资源是直接到 tomcat A 下取得。现在配置了负载均衡，在图片上传时是随机转发给A或B处理。如果图片传到B下。那么 nginx 是取不到的。所以现在还需配置 tomcat A 为图片上传服务器。所有图片上传请求全部转发给A处理。
+根据以上要求做如下配置
+```
+        # 指定图片上传服务器
+        upstream image_server{
+            server ambermoe.cn:80 weight=1;
+        }
+        
+        # admin_productImage_add admin_productImage_delete
+        # admin_category_update admin_category_add
+        # admin_category_delete 这五个都与图片增删改有关
+        # ~ 代表区分大小写的正则匹配 .* 代表任意个任意字符
+        location ~ .*(admin_productImage_add|admin_productImage_delete|admin_category_update|admin_category_add|admin_category_delete).*{
+            proxy_pass http://image_server;
+            client_max_body_size 2m;
+        }
+
+
+```
+关于location 路径匹配的问题
+ >= 开头表示精确匹配
+ ^~ 开头表示uri以某个常规字符串开头，理解为匹配 url路径即可。nginx不对url做编码，因此请求为/static/20%/aa，可以被规则^~ /static/ /aa匹配到（注意是空格）。
+ ~ 开头表示区分大小写的正则匹配
+ ~* 开头表示不区分大小写的正则匹配
+ !~和!~* 分别为区分大小写不匹配及不区分大小写不匹配 的正则
+ / 通用匹配，任何请求都会匹配到
+ **优先级(location =) > (location 完整路径) > (location ^~ 路径) > (location ~,~* 正则顺序) > (location 部分起始路径) > (/)**
+
+后面就是常规的正则表达式了
