@@ -89,7 +89,7 @@ sudo apt-get install redis-server
             location ~ .*\.(css|js|png|jpg|gif|ico|jpeg)$ {
                 #静态文件所在目录
                 root /usr/share/tomcat-7/webapps/tmall_ssh;
-                #上传大小限制 还要添加tomcat connector 属性 maxPostSize=“0”
+                #上传大小限制 还要添加tomcat connector 属性 maxPostSize=“-1” tomcat7 之后 值要<=0
                 client_max_body_size 50m; 
             }
             error_page   500 502 503 504 404  /50x.html;
@@ -190,3 +190,99 @@ location / {
  **优先级(location =) > (location 完整路径) > (location ^~ 路径) > (location ~,~* 正则顺序) > (location 部分起始路径) > (/)**
  
 后面就是常规的正则表达式了
+
+### 站点https 
+
+http转到https 首先申请证书 上传至服务器
+将原先的端口改为443 全部配置文件如下
+```
+user www-data;
+worker_processes 1;
+pid /run/nginx.pid;
+
+events {
+        worker_connections 768;
+}
+
+http {
+        include /etc/nginx/mime.types;
+        access_log /var/log/nginx/access.log;
+        error_log /var/log/nginx/error.log;
+
+        #对页面进行gzip压缩减少带宽
+        gzip on;
+            gzip_min_length 1k;  #最小1K
+            gzip_buffers 16 64K;
+            gzip_types text/plain application/x-javascript text/css application/xml application/javascript;
+            gzip_vary on;
+        upstream tomcat_8333_8322{
+            #weight表示权重，值越大，被分配到的几率越大
+            server  www.ambermoe.cn:8333 weight=1;
+            server  www.ambermoe.cn:8322 weight=1;
+        }
+        # 指定图片上传服务器
+        upstream image_server{
+            server www.ambermoe.cn:8333 weight=1;
+        }
+        server {
+            listen 443; # https端口
+            server_name www.ambermoe.cn; # 改为绑定证书的域名
+            ssl on;
+            ssl_certificate 1_www.ambermoe.cn_bundle.crt; # 改为自己申请得到的 crt 文件的名称
+            ssl_certificate_key 2_www.ambermoe.cn.key; # 改为自己申请得到的 key 文件的名称
+            ssl_session_timeout 5m;
+            ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+            ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;
+            ssl_prefer_server_ciphers on;
+
+            location / {
+                proxy_pass http://tomcat_8333_8322;
+                client_max_body_size 2m;
+            }
+            # admin_productImage_add admin_productImage_delete
+            # ~ 代表区分大小写的正则匹配 .* 代表任意个任意字符
+            location ~ .*(admin_productImage_add|admin_productImage_delete|admin_category_update|admin_category_add|admin_category_delete).*{
+                proxy_pass http://image_server;
+                client_max_body_size 2m;
+            }
+            location ~ .*\.(css|js|png|jpg|gif|ico|jpeg)$ {
+                root /usr/share/tomcat-7/webapps/tmall_ssh;
+            }
+            error_page   500 502 503 504 404  /50x.html;
+            location = /50x.html {
+                root   html;
+            }
+
+        }
+
+        server {
+            listen 80;
+            server_name www.ambermoe.cn;
+            root /usr/share/nginx/html;
+            location / {
+                index index.html index.jsp;
+            }
+        }
+}
+
+``` 
+
+1. 转https后额外配置了一个server 
+```
+        server {
+            listen 80;
+            server_name www.ambermoe.cn;
+            root /usr/share/nginx/html;
+            location / {
+                index index.html index.jsp;
+            }
+        }
+```
+
+访问http站点(即80端口) 会请求 /usr/share/nginx/html 下的index.html 并跳转到https站点下
+```
+<html>
+    <meta http-equiv="refresh" content="0;url=https://www.ambermoe.cn/">
+</html>
+```
+这样的话只能在访问主页的情况下实现跳转，访问其他页面时如果没有开启http站点的话只能是404了。
