@@ -90,3 +90,7 @@ keywords: IDEA
 | Ctrl+Alt+F12         | 显示当前文件的路径              |
 | Ctrl+H               | 显示当前类的继承层次            |
 | Ctrl+Shift+H         | 显示当前方法继承层次            |
+| Ctrl+Shift+U         | 大小写转换                      |
+| Ctrl+E               | 显示最近编辑文件列表            |
+| Ctrl+Shift+V         | 最近使用的剪贴板内容黏贴        |
+| Ctrl+Shift+Alt+J     | 批量修改变量名                  |
