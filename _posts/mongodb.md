@@ -1,0 +1,166 @@
+---
+layout: post
+title: 文档型数据库 MongoDB 
+categories: [database]
+description: MongoDB知识点记录、总结
+keywords: MongoDB, 非关系型数据库,
+---
+
+## MongoDB介绍
+
+### 简介
+
+​	MongoDB 是一个跨平台的，面向文档的数据库，是当前 NoSQL 数据库产品中最热门的一种。它介于关系数据库和非关系数据库之间，是非关系数据库当中功能最丰富，最像关系数据库的产品。它支持的数据结构非常松散，是类似 JSON 的 BSON 格式，因此可以存储比较复杂的数据类型。
+
+对于
+
+* (1) 数据量大
+* (2) 写入操作频繁
+* (3) 价值较低
+
+的数据比较适合使用MongoDB进行存储
+
+### 特点&结构
+
+​	MongoDB 最大的特点是他支持的查询语言非常强大，其语法有点类似于面向对象的查询语言，几乎可以实现类似关系数据库单表查询的绝大部分功能，而且还支持对数据建立索引。它是一个面向集合的,模式自由的文档型数据库。
+
+​	MongoDB 的逻辑结构是一种层次结构。主要由：
+
+>文档(document)、集合(collection)、数据库(database)这三部分组成的
+>
+>（1）MongoDB 的文档（document），相当于关系数据库中的一行记录。
+>（2）多个文档组成一个集合（collection），相当于关系数据库的表。
+>（3）多个集合（collection），逻辑上组织在一起，就是数据库（database）。
+>（4）一个 MongoDB 实例支持多个数据库（database）。
+
+​	
+
+| MongoDb           | 关系型数据库（Mysql、Oracle..） |
+| ----------------- | ------------------------------- |
+| 数据库(databases) | 数据库(databases)               |
+| 集合(collections) | 表(table)                       |
+| 文档(document)    | 行(row)                         |
+
+
+
+### 基本数据类型
+
+* null：用于表示空值或者不存在的字段，{“x”:null}
+
+* 布尔型：布尔类型有两个值true和false，{“x”:true}
+
+* 数值：shell默认使用64为浮点型数值。{“x”：3.14}或{“x”：3}。对于整型值，可以使用NumberInt（4字节符号整数）或NumberLong（8字节符号整数），{“x”:NumberInt(“3”)}{“x”:NumberLong(“3”)}
+
+* 字符串：UTF-8字符串都可以表示为字符串类型的数据，{“x”：“呵呵”}
+
+* 日期：日期被存储为自新纪元以来经过的毫秒数，不存储时区，{“x”:new Date()}
+
+* 正则表达式：查询时，使用正则表达式作为限定条件，语法与JavaScript的正则表达式相
+    同，{“x”:/[abc]/}
+
+* 数组：数据列表或数据集可以表示为数组，{“x”： [“a“，“b”,”c”]}内
+
+* 内嵌文档：文档可以嵌套其他文档，被嵌套的文档作为值来处理，{“x”:{“y”:3 }}
+
+    
+
+## MongoDB使用
+
+### 使用docker安装MongoDB
+
+1. 先使用 `docker pull mongo` 拉取docker镜像
+
+2. 使用 `docker inspect images mongo` 查看镜像信息可以看到改镜像expose了**27017**端口
+
+    ```
+    "ExposedPorts": {
+    	"27017/tcp": {}
+    }
+    ```
+
+3. 使用 `docker run -d --name=amber_mongo -p 27017:27017 mongo`  把镜像跑起来
+
+4. 因为本地没有安装 MongoDB 客户端先使用 `docker exec -it amber_mongo /bin/bash ` 进入容器内部,输入`mongo` 显示如下内容则说明安装成功（未指定服务器地址时默认连接127.0.0.1）
+
+```
+MongoDB shell version v4.2.1
+connecting to: mongodb://127.0.0.1:27017/?compressors=disabled&gssapiServiceName=mongodb
+Implicit session: session { "id" : UUID("bb8cb9fb-1aef-4bd8-9830-294575affaf2") }
+MongoDB server version: 4.2.1
+> 
+```
+
+### 常用命令
+
+```
+use 数据库名称                      # 选择和创建数据库
+db.集合名称.insert();              # 插入文档，集合不存在时会自动创建
+db.集合名称.find()                 # 查询，find内无内容时查询全部
+db.集合名称.find().limit()         # 查询，返回指定条数的记录
+db.集合名称.findOne()              # 返回符合条件的第一条记录
+db.集合名称.update(条件,修改后的数据)   # 修改条件指定的数据
+db.集合名称.remove()                 # 删除符合条件的记录，传入｛｝为删除全部记录
+db.集合名称.count()                  # 返回符合条件的记录数量，count()内无内容时统计集合记录数
+```
+
+​	其中查询条件比较特别可以使用，>、<、and、or、in、正则等查询出需要的记录，同时查询条件在出insert的其他几个列出方法中都可以使用，使用上与关系型数据库没有区别。
+
+| 命令 | 描述         | 例子                                                         |
+| ---- | ------------ | ------------------------------------------------------------ |
+| $lt  | 小于         | db.集合名称.find({ "field" : { $lt: value }})                |
+| $gt  | 大于         | db.集合名称.find({ "field" : { $gt: value }})                |
+| $lte | 小于等于     | db.集合名称.find({ "field" : { $lte: vlaue }})               |
+| $gte | 大于等于     | db.集合名称.find({ "field" : { $gte: value }})               |
+| $ne  | 不等于       | db.集合名称.find({ "field" : { $ne: value }})                |
+| $in  | 包含         | db.集合名称.find({ "field" : { $in : [ "1", "2" ] }})        |
+| $nin | 不包含       | db.集合名称.find({ "field" : { $nin : [ "1", "2" ] }})       |
+| $and | 且           | db.集合名称.find({$and:[ {"field":{$gte:1000}} ,{"field":{$lt:2000} }]}) |
+| $or  | 或           | db.集合名称.find({$or:[ {"field":{$gte:1000}} ,{"field":{$lt:2000} }]}) |
+| $inc | 列自增长     | db.集合名称.update({_id:"2"},{$inc:{"field":NumberInt(1)}} ) |
+| $set | 更新指定字段 | {$set:{field:NumberInt(2000)}} #未指定字段，会删除其他未指定字段 |
+
+### java操作MongoDB
+
+引入`mongodb‐driver` 依赖
+
+```
+<dependencies>
+    <dependency>
+        <groupId>org.mongodb</groupId>
+        <artifactId>mongodb-driver</artifactId>
+        <version>3.6.3</version>
+    </dependency>
+</dependencies>
+```
+
+创建测试类
+
+BasicDBObject对象：表示一个具体的记录，BasicDBObject实现了DBObject，是keyvalue
+的数据结构，用起来和HashMap是基本一致的。
+
+```
+public class MongoDemo {
+    public static void main(String[] args) {
+        MongoClient client=new MongoClient("ambermoe.cn"); //创建连接
+        MongoDatabase spitdb = client.getDatabase("spitdb"); //打开数据库
+        MongoCollection<Document> spit = spitdb.getCollection("spit"); //获取集合
+        BasicDBObject bson=new BasicDBObject("visits",new BasicDBObject("$gt",1000) );// 构建查询条件
+        FindIterable<Document> documents = spit.find(bson); //查询记录获取文档集合
+
+        for(Document document:documents){
+            System.out.println("内容："+ document.getString("content"));
+            System.out.println("用户ID:"+document.getString("userid"));
+            System.out.println("浏览量："+document.getInteger("visits"));
+        }
+        // 添加数据
+        Map<String,Object> map=new HashMap();
+        map.put("_id","123456");
+        map.put("content","我要吐槽");
+        map.put("publishtime",new Date());
+        Document document=new Document(map);
+        spit.insertOne(document); //插入数据
+        client.close();//关闭连接
+    }
+}
+```
+

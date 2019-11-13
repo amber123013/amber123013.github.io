@@ -188,7 +188,7 @@ location / {
 
 ```
  **优先级(location =) > (location 完整路径) > (location ^~ 路径) > (location ~,~* 正则顺序) > (location 部分起始路径) > (/)**
- 
+
 后面就是常规的正则表达式了
 
 ### 站点https 
@@ -265,7 +265,7 @@ http {
         }
 }
 
-``` 
+```
 
 1. 转https后额外配置了一个server 
 ```
